@@ -10,17 +10,34 @@ const config = {
   storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
   messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
   appId: process.env.REACT_APP_APP_ID,
-  // apiKey: "AIzaSyBBDBWfT8eaTlzzihrOTdE8DOp19wslBGg",
-  // authDomain: "clothing-app-arg.firebaseapp.com",
-  // databaseURL: "https://clothing-app-arg.firebaseio.com",
-  // projectId: "clothing-app-arg",
-  // storageBucket: "clothing-app-arg.appspot.com",
-  // messagingSenderId: "533095756379",
-  // appId: "1:533095756379:web:2f4f9479334f4b5fbc857e",
-  measurementId: process.env.REACT_APP_MEASUREMENT_ID//"G-VGQL9TS1BD"
+  measurementId: process.env.REACT_APP_MEASUREMENT_ID
 };
-console.log(process.env);
-console.log(config);
+
+export const createUserProfileDocument = async (userAuth, additionalData) => {
+  if (!userAuth) return;
+
+  const userRef = firestore.doc(`users/${userAuth.uid}`);
+
+  const snapShot = await userRef.get();
+  //console.log(snapShot);
+
+  if (!snapShot.exists) {
+    const { displayName, email } = userAuth;
+    const createdAt = new Date();
+    try {
+      await userRef.set({
+        displayName,
+        email,
+        createdAt,
+        ...additionalData
+      })
+    } catch (error) {
+      console.log('error creating user', error.message);
+    }
+  }
+  return userRef;
+
+}
 
 firebase.initializeApp(config);
 const provider = new firebase.auth.GoogleAuthProvider();
